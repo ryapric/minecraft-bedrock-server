@@ -1,0 +1,40 @@
+- hosts: minecraft_bedrock_server
+  tasks:
+
+    - name: Install core system tools
+      become: yes
+      apt:
+        update_cache: yes
+        name:
+          - bash
+          - curl
+          - jq
+          - less
+          - man
+          - nano
+          - git
+          - python3
+          - python3-pip
+          - python3-venv
+          - shellcheck
+          - zip
+          - unzip
+        state: latest
+
+    - name: Install Docker (by piping to bash, I know I know)
+      shell: command -v docker || (curl https://get.docker.com | bash)
+    
+    # Can't seem to just add a user to a group idempotently; I'd need to know
+    # ALL the groups, or replace the primary. So, just shell it out.
+    - name: Add user to docker group
+      become: yes
+      command: usermod -aG docker ubuntu
+    
+    - name: Install docker-compose
+      become: yes
+      apt:
+        update_cache: yes
+        name: docker-compose
+
+    - name: Deploy Minecraft Bedrock server
+      command: docker-compose up -d --build

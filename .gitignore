@@ -1,0 +1,15 @@
+# Main config file
+config.yaml
+
+# Set you own gitignored AWS tags, in case they have secrets
+tags/*.json
+!tags/*-example.json
+
+# Filled securityGroups CFN template
+stacks/*.yaml
+!stacks/*_jinja.yaml
+
+# Sensitive Ansible stuff
+ansible/hosts
+ansible/ansible.cfg
+ansible/phantom.yaml

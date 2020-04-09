@@ -1,0 +1,7 @@
+# IP of your Bedrock server host
+[minecraft_bedrock_server]
+{{ config.minecraft_bedrock_server_ip }}
+
+# In case you're setting up at home with the Phantom proxy for playing on PS4
+[phantom_proxy]
+{{ config.phantom_proxy_host_ip }}

@@ -1,0 +1,12 @@
+- hosts: phantom_proxy
+  tasks:
+
+    # NOTE: this is assumed to be running on a Raspberry Pi, so change 
+    - name: Download Phantom
+      get_url:
+        url: https://github.com/jhead/phantom/releases/download/v0.3.1/phantom-linux-arm7
+        dest: /home/pi/phantom
+        mode: '0755'
+    
+    - name: Run Phantom proxy
+      command: nohup ./phantom -server {{ config.minecraft_bedrock_server_ip }}:19132 & disown
