@@ -1,0 +1,133 @@
+AWSTemplateFormatVersion: "2010-09-09"
+Description: "VPC for Minecraft Bedrock Server"
+
+Resources:
+
+  VPC:
+    Type: "AWS::EC2::VPC"
+    Properties:
+      CidrBlock: "10.0.0.0/16"
+      Tags:
+        - Key:   "Name"
+          Value: "minecraft-bedrock-server-vpc"
+  
+  PublicSubnet:
+    Type: AWS::EC2::Subnet
+    Properties:
+      VpcId: !Ref VPC
+      CidrBlock: "10.0.1.0/24"
+      MapPublicIpOnLaunch: "true"
+
+  InternetGateway:
+    Type: AWS::EC2::InternetGateway
+
+  VPCGatewayAttachment:
+    Type: AWS::EC2::VPCGatewayAttachment
+    Properties:
+      VpcId: !Ref VPC
+      InternetGatewayId: !Ref InternetGateway
+
+  PublicRouteTable:
+    Type: AWS::EC2::RouteTable
+    Properties:
+      VpcId: !Ref VPC
+
+  PublicRoute:
+    Type: AWS::EC2::Route
+    DependsOn: VPCGatewayAttachment
+    Properties:
+      RouteTableId: !Ref PublicRouteTable
+      DestinationCidrBlock: "0.0.0.0/0"
+      GatewayId: !Ref InternetGateway
+
+  PublicSubnetRouteTableAssociation:
+    Type: AWS::EC2::SubnetRouteTableAssociation
+    Properties:
+      SubnetId: !Ref PublicSubnet
+      RouteTableId: !Ref PublicRouteTable
+
+  PublicSubnetNetworkAclAssociation:
+    Type: AWS::EC2::SubnetNetworkAclAssociation
+    Properties:
+      SubnetId: !Ref PublicSubnet
+      NetworkAclId: !GetAtt VPC.DefaultNetworkAcl
+
+
+# Security Groups
+AWSTemplateFormatVersion: "2010-09-09"
+Description: "VPC for Minecraft Bedrock Server"
+
+Resources:
+
+  SecurityGroupSSH:
+    Type: "AWS::EC2::SecurityGroup"
+    Properties:
+      GroupDescription: "Enable SSH access via port 22, from deployment host"
+      VpcId: !ImportValue vpc-VPCID
+      SecurityGroupIngress:
+      {%- for ip in config.whitelisted_ips %} 
+        - IpProtocol: "tcp"
+          FromPort: "22"
+          ToPort: "22"
+          CidrIp: "{{ ip }}/32"
+      {%- endfor %}
+
+  SecurityGroupMinecraftServer:
+    Type: "AWS::EC2::SecurityGroup"
+    Properties:
+      GroupDescription: "Enable access to Minecraft Bedrock server for approved IPs"
+      VpcId: !ImportValue vpc-VPCID
+      SecurityGroupIngress:
+      {%- for ip in config.whitelisted_ips %} 
+        - IpProtocol: "tcp"
+          FromPort: "19132"
+          ToPort: "19132"
+          CidrIp: "{{ ip }}/32"
+      {%- endfor %}
+
+
+Resources:
+  EC2InstanceMain:
+    Type: "AWS::EC2::Instance"
+    Properties: 
+      ImageId: "ami-064efdb82ae15e93f" # Latest Ubuntu 18.04 in ca-central-1; https://cloud-images.ubuntu.com/locator/ec2/
+      InstanceType: t2.micro
+      KeyName: {{ config.ec2_key_name }}
+      SecurityGroupIds:
+        - !ImportValue securityGroups-SecurityGroupSSH
+        - !ImportValue securityGroups-SecurityGroupMinecraftServer
+      SubnetId: !ImportValue vpc-PublicSubnetID
+      Tags:
+        - Key:   "Name"
+          Value: "minecraft-bedrock-server"
+
+
+
+Outputs:
+  SecurityGroupSSH:
+    Description: "SG ID allowing SSH access"
+    Value: !Ref SecurityGroupSSH
+    Export:
+      Name: !Sub "${AWS::StackName}-SecurityGroupSSH"
+  SecurityGroupMinecraftServer:
+    Description: "SG ID allowing Minecraft server access to approved IPs"
+    Value: !Ref SecurityGroupMinecraftServer
+    Export:
+      Name: !Sub "SecurityGroupMinecraftServer"
+
+
+
+
+
+
+Outputs:
+  VPCID:
+    Description: "VPC ID"
+    Value: !Ref VPC
+    Export:
+      Name: !Sub "${AWS::StackName}-VPCID"
+  PublicSubnetID:
+    Description: "Public Subnet ID"
+    Value: !Ref PublicSubnet
+    Export:
+      Name: !Sub "${AWS::StackName}-PublicSubnetID"

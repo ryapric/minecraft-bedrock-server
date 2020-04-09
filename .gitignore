@@ -6,8 +6,8 @@ tags/*.json
 !tags/*-example.json
 
 # Filled securityGroups CFN template
-stacks/*.yaml
-!stacks/*_jinja.yaml
+cloudformation/*.yaml
+!cloudformation/*_jinja.yaml
 
 # Sensitive Ansible stuff
 ansible/hosts
