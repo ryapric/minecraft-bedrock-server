@@ -25,6 +25,15 @@ if '_jinja' not in argfile:
 with open(argfile) as f:
     template = f.read()
 
+# Stick a do-not-edit header on top
+header = """\
+####################################################################
+# !!! DO NOT EDIT BY HAND. Created by the `render-all.py` file !!! #
+####################################################################
+
+"""
+template = header + template
+
 # Render Jinja template using global config dict
 jinja_template = Template(template)
 rendered_template = jinja_template.render(config = config)
