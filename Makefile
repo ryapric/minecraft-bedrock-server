@@ -6,7 +6,6 @@ SHELL := /usr/bin/env bash
 define cfn-create-update-args
 --stack-name $(stackname) \
 --template-body file://stacks/$(stackname).yaml \
---parameters file://parameters/$(stackname).json \
 --tags file://tags/tags.json
 endef
 
