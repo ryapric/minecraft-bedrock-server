@@ -42,7 +42,6 @@ cfn-update: render-all
 	@make -s get-bedrock-server-ip
 
 cfn-delete: render-all
-	@make -s check-stackname
 	@aws cloudformation delete-stack --stack-name $(stackname)
 	@printf "Stack delete request sent. Waiting for delete completion...\n"
 	@aws cloudformation wait stack-delete-complete --stack-name $(stackname)
