@@ -48,4 +48,10 @@
         dest: /root/docker-compose.yaml
 
     - name: Deploy Minecraft Bedrock server
-      command: docker-compose up -d --build
+      command: docker-compose -f /root/docker-compose.yaml up -d --build
+
+    - name: Set up backup cron job
+      cron:
+        name: "Backup Minecraft Bedrock server data"
+        hour: "3"
+        job: "cd /root && tar -czf bedrock_server_backup.tar.gz worlds"
