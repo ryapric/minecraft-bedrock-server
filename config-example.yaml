@@ -4,15 +4,15 @@
 
 # This is the only file that you should back up, really.
 
-bedrock_server_ip: 1.1.1.1
+bedrock_server_ip: "1.1.1.1"
 
 whitelisted_ips:
-  - 2.2.2.2 # your own IP
-  - 3.3.3.3 # your friend
-  - 4.4.4.4 # another friend
+  - "2.2.2.2" # your own IP
+  - "3.3.3.3" # your friend
+  - "4.4.4.4" # another friend
 
 # Keypair name in AWS, for connecting to the Bedrock server host
-ec2_key_name: "name-of-keypair-in-aws"
+ec2_keypair_name: "name-of-keypair-in-aws"
 
 # SSH private keyfile paths for Ansible to use
 local_aws_keyfile: "/local/path/to/aws/pemkey.pem"
