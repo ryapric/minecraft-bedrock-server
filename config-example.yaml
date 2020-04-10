@@ -4,7 +4,7 @@
 
 # This is the only file that you should back up, really.
 
-bedrock_server_ip: "1.1.1.1"
+minecraft_bedrock_server_ip: "1.1.1.1"
 
 whitelisted_ips:
   - "2.2.2.2" # your own IP
