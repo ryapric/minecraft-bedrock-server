@@ -24,6 +24,10 @@ results may vary if using Windows.
 
 - Deployment of software/configuration management:
 
+  - GNU Make
+
+  - jq
+  
   - Python 3
 
   - Python 3's package manager, `pip3`
