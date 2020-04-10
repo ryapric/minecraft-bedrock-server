@@ -78,6 +78,10 @@ Resources:
       GroupDescription: "Enable access to Minecraft Bedrock server for approved IPs"
       VpcId: !Ref VPC
       SecurityGroupIngress:
+        - IpProtocol: "icmp"
+          FromPort: "-1"
+          ToPort: "-1"
+          CidrIp: "0.0.0.0/0"
       {%- for ip in config.whitelisted_ips %} 
         - IpProtocol: "tcp"
           FromPort: "19132"
