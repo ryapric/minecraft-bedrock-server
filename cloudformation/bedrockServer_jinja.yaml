@@ -3,6 +3,9 @@ Description: "VPC for Minecraft Bedrock Server"
 
 Resources:
 
+  ###########################
+  # VPC component resources #
+  ###########################
   VPC:
     Type: "AWS::EC2::VPC"
     Properties:
@@ -53,17 +56,14 @@ Resources:
       NetworkAclId: !GetAtt VPC.DefaultNetworkAcl
 
 
-# Security Groups
-AWSTemplateFormatVersion: "2010-09-09"
-Description: "VPC for Minecraft Bedrock Server"
-
-Resources:
-
+  ###################
+  # Security Groups #
+  ###################
   SecurityGroupSSH:
     Type: "AWS::EC2::SecurityGroup"
     Properties:
       GroupDescription: "Enable SSH access via port 22, from deployment host"
-      VpcId: !ImportValue vpc-VPCID
+      VpcId: !Ref VPC
       SecurityGroupIngress:
       {%- for ip in config.whitelisted_ips %} 
         - IpProtocol: "tcp"
@@ -76,7 +76,7 @@ Resources:
     Type: "AWS::EC2::SecurityGroup"
     Properties:
       GroupDescription: "Enable access to Minecraft Bedrock server for approved IPs"
-      VpcId: !ImportValue vpc-VPCID
+      VpcId: !Ref VPC
       SecurityGroupIngress:
       {%- for ip in config.whitelisted_ips %} 
         - IpProtocol: "tcp"
@@ -86,40 +86,27 @@ Resources:
       {%- endfor %}
 
 
-Resources:
-  EC2InstanceMain:
+  ################
+  # EC2 instance #
+  ################
+  BedrockServer:
     Type: "AWS::EC2::Instance"
     Properties: 
       ImageId: "ami-064efdb82ae15e93f" # Latest Ubuntu 18.04 in ca-central-1; https://cloud-images.ubuntu.com/locator/ec2/
       InstanceType: t2.micro
-      KeyName: {{ config.ec2_key_name }}
+      KeyName: {{ config.ec2_keypair_name }}
       SecurityGroupIds:
-        - !ImportValue securityGroups-SecurityGroupSSH
-        - !ImportValue securityGroups-SecurityGroupMinecraftServer
-      SubnetId: !ImportValue vpc-PublicSubnetID
+        - !Ref SecurityGroupSSH
+        - !Ref SecurityGroupMinecraftServer
+      SubnetId: !Ref PublicSubnet
       Tags:
         - Key:   "Name"
           Value: "minecraft-bedrock-server"
 
 
-
-Outputs:
-  SecurityGroupSSH:
-    Description: "SG ID allowing SSH access"
-    Value: !Ref SecurityGroupSSH
-    Export:
-      Name: !Sub "${AWS::StackName}-SecurityGroupSSH"
-  SecurityGroupMinecraftServer:
-    Description: "SG ID allowing Minecraft server access to approved IPs"
-    Value: !Ref SecurityGroupMinecraftServer
-    Export:
-      Name: !Sub "SecurityGroupMinecraftServer"
-
-
-
-
-
-
+###########
+# Outputs #
+###########
 Outputs:
   VPCID:
     Description: "VPC ID"
@@ -131,3 +118,18 @@ Outputs:
     Value: !Ref PublicSubnet
     Export:
       Name: !Sub "${AWS::StackName}-PublicSubnetID"
+  SecurityGroupSSH:
+    Description: "SG ID allowing SSH access"
+    Value: !Ref SecurityGroupSSH
+    Export:
+      Name: !Sub "${AWS::StackName}-SecurityGroupSSH"
+  SecurityGroupMinecraftServer:
+    Description: "SG ID allowing Minecraft server access to approved IPs"
+    Value: !Ref SecurityGroupMinecraftServer
+    Export:
+      Name: !Sub "SecurityGroupMinecraftServer"
+  BedrockServerIP:
+    Description: Public IP of Bedrock Server
+    Value: !GetAtt BedrockServer.PublicIp
+    Export:
+      Name: !Sub "${AWS::StackName}-BedrockServerIp"
