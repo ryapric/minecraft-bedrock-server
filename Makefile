@@ -12,22 +12,20 @@ render-all:
 ##################
 
 # This is identical for create- and update-stack, so stuff into a Make variable
+stackname := bedrockServer
+
 define cfn-create-update-args
 --stack-name $(stackname) \
 --template-body file://cloudformation/$(stackname).yaml \
 --tags file://cloudformation/tags/tags.json
 endef
 
-# CloudFormation targets need a `stackname` variable passed in when called
-check-stackname:
-	@if [ -z "$(stackname)" ]; then printf 'You must provide a `stackname` parameter, e.g. `make create stackname=<x>`\n' && exit 1; fi
-
 # This one's gonna look a little gross, sorry
 get-bedrock-server-ip:
 	@printf "Bedrock server IP: %s\n" \
 	 	$$(aws cloudformation describe-stacks --stack-name bedrockServer | jq -r '.Stacks[0].Outputs | map(select(.OutputKey == "BedrockServerIP")) | .[0].OutputValue')
 
-cfn-create: check-stackname render-all
+cfn-create: render-all
 	@printf "Trying to submit stack...\n"
 	@aws cloudformation create-stack $(cfn-create-update-args)
 	@printf "Stack submitted. Waiting for create completion...\n"
@@ -35,8 +33,7 @@ cfn-create: check-stackname render-all
 	@printf "Done.\n"
 	@make -s get-bedrock-server-ip
 
-cfn-update: check-stackname render-all
-	@make -s check-stackname
+cfn-update: render-all
 	@printf "Trying to submit stack...\n"
 	@aws cloudformation update-stack $(cfn-create-update-args)
 	@printf "Stack submitted. Waiting for update completion...\n"
@@ -44,7 +41,7 @@ cfn-update: check-stackname render-all
 	@printf "Done.\n"
 	@make -s get-bedrock-server-ip
 
-cfn-delete: check-stackname render-all
+cfn-delete: render-all
 	@make -s check-stackname
 	@aws cloudformation delete-stack --stack-name $(stackname)
 	@printf "Stack delete request sent. Waiting for delete completion...\n"
