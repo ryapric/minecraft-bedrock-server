@@ -6,7 +6,7 @@
 
 minecraft_bedrock_server_ip: "1.1.1.1"
 
-whitelisted_ips:
+whitelisted_cidrs:
   - "2.2.2.2" # your own IP
   - "3.3.3.3" # your friend
   - "4.4.4.4" # another friend

@@ -8,9 +8,10 @@ services:
       context: .
     # volumes:
     #   - 
+    tty: true
     ports:
-      - "19132:19132"
-      - "19133:19133"
+      - "19132:19132/udp"
+      - "19133:19133/udp"
 
 # volumes:
 #   bedrock_server_data:

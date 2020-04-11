@@ -1,6 +1,14 @@
 AWSTemplateFormatVersion: "2010-09-09"
 Description: "VPC for Minecraft Bedrock Server"
 
+# Look up AMI IDs here: https://cloud-images.ubuntu.com/locator/ec2/
+Mappings: 
+  RegionMap: 
+    us-east-2:
+      "HVM64": "ami-07c1207a9d40bc3bd"
+    ca-central-1:
+      "HVM64": "ami-0edd51cc29813e254"
+
 Resources:
 
   ###########################
@@ -65,12 +73,10 @@ Resources:
       GroupDescription: "Enable SSH access via port 22, from deployment host"
       VpcId: !Ref VPC
       SecurityGroupIngress:
-      {%- for ip in config.whitelisted_ips %} 
         - IpProtocol: "tcp"
           FromPort: "22"
           ToPort: "22"
-          CidrIp: "{{ ip }}/32"
-      {%- endfor %}
+          CidrIp: "{{ config.my_ip }}/32"
 
   SecurityGroupMinecraftServer:
     Type: "AWS::EC2::SecurityGroup"
@@ -82,11 +88,11 @@ Resources:
           FromPort: "-1"
           ToPort: "-1"
           CidrIp: "0.0.0.0/0"
-      {%- for ip in config.whitelisted_ips %} 
-        - IpProtocol: "tcp"
+      {%- for ip in config.whitelisted_cidrs %} 
+        - IpProtocol: "udp"
           FromPort: "19132"
           ToPort: "19132"
-          CidrIp: "{{ ip }}/32"
+          CidrIp: "{{ ip }}"
       {%- endfor %}
 
 
@@ -96,8 +102,8 @@ Resources:
   BedrockServer:
     Type: "AWS::EC2::Instance"
     Properties: 
-      ImageId: "ami-064efdb82ae15e93f" # Latest Ubuntu 18.04 in ca-central-1; https://cloud-images.ubuntu.com/locator/ec2/
-      InstanceType: t2.micro
+      ImageId: !FindInMap [RegionMap, !Ref "AWS::Region", HVM64]
+      InstanceType: "t2.micro"
       KeyName: {{ config.ec2_keypair_name }}
       SecurityGroupIds:
         - !Ref SecurityGroupSSH

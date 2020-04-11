@@ -5,4 +5,4 @@
 
 # In case you're setting up at home with the Phantom proxy for playing on PS4
 [phantom_proxy]
-{{ config.phantom_proxy_host_ip }} ansible_ssh_private_key_file={{ config.local_ssh_keyfile }}
+{{ config.phantom_proxy_host_ip }} ansible_user=pi ansible_ssh_private_key_file={{ config.local_ssh_keyfile }}

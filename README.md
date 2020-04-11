@@ -32,7 +32,9 @@ results may vary if using Windows.
 
   - Python 3's package manager, `pip3`
 
-  - Ansible (which you can get via something like `pip3 install ansible`)
+    - Once you have `pip` installed, run `pip3 install -r requirements.txt`.
+      Note that you may need to pass the `--user` flag if on a Debian-based
+      system.
 
 - Infrastructure/hosting:
 
@@ -46,8 +48,6 @@ results may vary if using Windows.
 
   - Appropriate IAM permissions for your User to manage the lifecycle of the CFN
     resources
-
-- The AWS CLI (which you can get via something like `pip3 install awscli`)
 
 Developer Notes
 ---------------

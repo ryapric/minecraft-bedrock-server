@@ -54,5 +54,5 @@ cfn-delete: render-all
 ansible-configure-bedrock-server: render-all
 	@cd ansible && ansible-playbook main.yaml
 
-ansible-configure-phantom-proxy:
-	@cd ansible && ansible-playbook --key-file  -u pi main.yaml
+ansible-configure-phantom-proxy: render-all
+	@cd ansible && ansible-playbook phantom.yaml
