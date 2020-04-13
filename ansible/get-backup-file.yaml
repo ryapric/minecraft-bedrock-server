@@ -1,0 +1,9 @@
+- hosts: minecraft_bedrock_server
+  become: yes
+  tasks:
+
+    - name: Retrieve backup file from server, and store in home directory
+      fetch:
+        src: "/root/bedrock-server-backup.tar.gz"
+        dest: "~/bedrock-server-backup.tar.gz"
+        flat: yes
