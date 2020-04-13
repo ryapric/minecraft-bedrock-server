@@ -61,5 +61,5 @@
     - name: Set up backup cron job on host
       cron:
         name: "Backup Minecraft Bedrock server data"
-        minute: "*/5"
+        minute: "*/15"
         job: "bash /root/backup-to-s3.sh"
