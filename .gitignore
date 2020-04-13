@@ -2,8 +2,8 @@
 config.yaml
 
 # Set you own gitignored AWS tags, in case they have secrets
-tags/*.json
-!tags/*-example.json
+cloudformation/tags/*.json
+!cloudformation/tags/*-example.json
 
 # Filled securityGroups CFN template
 cloudformation/*.yaml
@@ -13,3 +13,11 @@ cloudformation/*.yaml
 ansible/hosts
 ansible/ansible.cfg
 ansible/phantom.yaml
+
+# Bedrock server files you might not want to push
+ansible/bedrock-server/server.properties
+ansible/bedrock-server/permissions.json
+ansible/bedrock-server/whitelist.json
+
+# Actual server backups, in case you pull them locally
+*.tar.gz

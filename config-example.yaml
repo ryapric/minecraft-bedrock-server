@@ -2,14 +2,37 @@
 # ! ! ! Rename this to just 'config.yaml' ! ! ! #
 #################################################
 
-# This is the only file that you should back up, really.
+# This is the only file that you should back up, really. You may add any
+# Minecraft Bedrock config options anywhere in this file, exactly as you would
+# find them in the usual `server.properties` file, with three caveats: use YAML
+# keys instead of the regular INI format, replace any hyphens/dashes with
+# underscores in those keys, and set boolean values as explicit strings (wrapped
+# in quotes, e.g. "true").
 
 minecraft_bedrock_server_ip: "1.1.1.1"
 
+# Needed to whitelist SSH access to the server host
+my_ip: "2.2.2.2"
+
+# Restrict access to Gamertags you recognize
+whitelisted_gamertags:
+  - "you"
+  - "yourFriend"
+
+# Optional; CloudFormation will use these to restrict IP access. If you don't
+# care, then just leave "0.0.0.0/0". Note that if you don't set whitelisted
+# Gamertag entries, anyone can join your server if they know the IP!
 whitelisted_cidrs:
-  - "2.2.2.2" # your own IP
-  - "3.3.3.3" # your friend
-  - "4.4.4.4" # another friend
+  - "2.2.2.2/32" # your own IP
+  - "3.3.3.3/32" # your friend
+  - "4.4.4.4/32" # another friend
+  - "0.0.0.0/0" # anyone at all
+
+# Set Operators for your server. The only reliable way to find these, is to
+# watch the server logs when people log in
+operator_xuids:
+  - "abc123" # you
+  - "xyz789" # friend
 
 # Keypair name in AWS, for connecting to the Bedrock server host
 ec2_keypair_name: "name-of-keypair-in-aws"
@@ -18,5 +41,6 @@ ec2_keypair_name: "name-of-keypair-in-aws"
 local_aws_keyfile: "/local/path/to/aws/pemkey.pem"
 local_ssh_keyfile: "/local/path/to/private/ssh/key"
 
-# Host IP of the Phantom proxy on your own home network
+# Host IP of the Phantom proxy on your own home network. If not using, leave
+# blank/default
 phantom_proxy_host_ip: "192.168.0.0"

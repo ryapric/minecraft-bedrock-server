@@ -32,7 +32,8 @@ header = """\
 ####################################################################
 
 """
-template = header + template
+if '.json' not in argfile:
+    template = header + template 
 
 # Render Jinja template using global config dict
 jinja_template = Template(template)

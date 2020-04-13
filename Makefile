@@ -17,7 +17,8 @@ stackname := bedrockServer
 define cfn-create-update-args
 --stack-name $(stackname) \
 --template-body file://cloudformation/$(stackname).yaml \
---tags file://cloudformation/tags/tags.json
+--tags file://cloudformation/tags/tags.json \
+--capabilities CAPABILITY_IAM
 endef
 
 # This one's gonna look a little gross, sorry

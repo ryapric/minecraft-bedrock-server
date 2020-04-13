@@ -1,0 +1,8 @@
+[
+  {%- for op_xuid in config.operator_xuids %}
+  {
+    "permission": "operator",
+    "xuid": "{{ op_xuid }}"
+  }{{ "," if not loop.last }}
+  {%- endfor %}
+]

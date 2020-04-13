@@ -9,15 +9,17 @@ RUN apt-get update && apt-get install -y \
       nano \
       curl \
       zip \
-      unzip
+      unzip \
+      awscli
 
 WORKDIR /root
 
-RUN curl -o bedrock_server.zip 'https://minecraft.azureedge.net/bin-linux/bedrock-server-1.14.32.1.zip'
-RUN unzip bedrock_server.zip
+RUN curl -o bedrock_server.zip "https://minecraft.azureedge.net/bin-linux/bedrock-server-${bedrock_version}.zip"
+RUN unzip bedrock_server.zip >/dev/null
 
-# COPY server.properties server.properties
-# COPY whitelist.json whitelist.json
+COPY server.properties .
+COPY permissions.json .
+COPY whitelist.json .
 
 EXPOSE 19132/udp 19133/udp
 

@@ -18,6 +18,7 @@
           - tar
           - zip
           - unzip
+          - awscli
         state: latest
 
     - name: Add Docker GPG apt Key
@@ -38,21 +39,27 @@
           - docker-compose
         state: latest
 
-    - name: Copy up Dockerfile
+    - name: Copy up Docker files
       copy:
-        src: ./docker/Dockerfile
-        dest: /root/Dockerfile
-    
-    - name: Copy up docker-compose.yaml
-      copy:
-        src: ./docker/docker-compose.yaml
-        dest: /root/docker-compose.yaml
+        src: "{{ item.src }}"
+        dest: "{{ item.dest }}"
+      with_items:
+        - {src: './bedrock-server/Dockerfile', dest: '/root/Dockerfile'}
+        - {src: './bedrock-server/docker-compose.yaml', dest: '/root/docker-compose.yaml'}
+        - {src: './bedrock-server/server.properties', dest: '/root/server.properties'}
+        - {src: './bedrock-server/permissions.json', dest: '/root/permissions.json'}
+        - {src: './bedrock-server/whitelist.json', dest: '/root/whitelist.json'}
+        - {src: './bedrock-server/backup-to-s3.sh', dest: '/root/backup-to-s3.sh'}
+        - {src: './bedrock-server/restore-from-s3.sh', dest: '/root/restore-from-s3.sh'}
+
+    - name: Check if backup data exists, and use it if so
+      command: bash /root/restore-from-s3.sh
 
     - name: Deploy Minecraft Bedrock server
       command: docker-compose -f /root/docker-compose.yaml up -d --build
 
-    - name: Set up backup cron job
+    - name: Set up backup cron job on host
       cron:
         name: "Backup Minecraft Bedrock server data"
-        hour: "3"
-        job: "cd /root && tar -czf bedrock_server_backup.tar.gz worlds"
+        minute: "*/5"
+        job: "bash /root/backup-to-s3.sh"

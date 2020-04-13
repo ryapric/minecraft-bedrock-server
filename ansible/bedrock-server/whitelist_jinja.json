@@ -1,0 +1,8 @@
+[
+  {%- for whitelisted_gamertag in config.whitelisted_gamertags %}
+  {
+    "ignoresPlayerLimit": "false",
+    "name": "{{ whitelisted_gamertag }}"
+  }{{ "," if not loop.last }}
+  {%- endfor %}
+]

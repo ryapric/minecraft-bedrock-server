@@ -6,8 +6,13 @@ Mappings:
   RegionMap: 
     us-east-2:
       "HVM64": "ami-07c1207a9d40bc3bd"
+      "FreeTierInstance": "t2.micro"
     ca-central-1:
       "HVM64": "ami-0edd51cc29813e254"
+      "FreeTierInstance": "t2.micro"
+    eu-north-1:
+      "HVM64": "ami-050981837962d44ac"
+      "FreeTierInstance": "t3.micro"
 
 Resources:
 
@@ -96,14 +101,46 @@ Resources:
       {%- endfor %}
 
 
-  ################
-  # EC2 instance #
-  ################
+  ################################
+  # EC2 instance and IAM Profile #
+  ################################
+  BedrockRole:
+    Type: "AWS::IAM::Role"
+    Properties:
+      AssumeRolePolicyDocument:
+        Version: "2012-10-17"
+        Statement:
+          - Effect: "Allow"
+            Principal:
+              Service:
+                - "ec2.amazonaws.com"
+            Action:
+              - "sts:AssumeRole"
+      Path: "/"
+      Policies:
+        - PolicyName: "bedrockServerPolicy"
+          PolicyDocument:
+            Version: "2012-10-17"
+            Statement:
+              - Effect: "Allow"
+                Action:
+                  - "s3:*"
+                  - "sts:*"
+                Resource: "*"
+  
+  BedrockInstanceProfile:
+    Type: "AWS::IAM::InstanceProfile"
+    Properties:
+      Path: "/"
+      Roles:
+        - !Ref BedrockRole
+
   BedrockServer:
     Type: "AWS::EC2::Instance"
     Properties: 
       ImageId: !FindInMap [RegionMap, !Ref "AWS::Region", HVM64]
-      InstanceType: "t2.micro"
+      InstanceType: !FindInMap [RegionMap, !Ref "AWS::Region", FreeTierInstance]
+      IamInstanceProfile: !Ref BedrockInstanceProfile
       KeyName: {{ config.ec2_keypair_name }}
       SecurityGroupIds:
         - !Ref SecurityGroupSSH
