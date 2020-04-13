@@ -22,7 +22,7 @@ define cfn-create-update-args
 endef
 
 # This one's gonna look a little gross, sorry
-get-bedrock-server-ip:
+get-bedrock-server-ip: render-all
 	@printf "Bedrock server IP: %s\n" \
 	 	$$(aws cloudformation describe-stacks --stack-name bedrockServer | jq -r '.Stacks[0].Outputs | map(select(.OutputKey == "BedrockServerIP")) | .[0].OutputValue')
 
@@ -58,5 +58,5 @@ ansible-configure-bedrock-server: render-all
 ansible-configure-phantom-proxy: render-all
 	@cd ansible && ansible-playbook phantom.yaml
 
-get-backup-file:
+get-backup-file: render-all
 	@cd ansible && ansible-playbook get-backup-file.yaml
