@@ -3,9 +3,9 @@
 #################################################
 
 # This is the only file that you should back up, really. You may add any
-# Minecraft Bedrock config options anywhere in this file, exactly as you would
-# find them in the usual `server.properties` file, with three caveats: use YAML
-# keys instead of the regular INI format, replace any hyphens/dashes with
+# Minecraft Bedrock config options at the bottom of this file, exactly as you
+# would find them in the usual `server.properties` file, with three caveats: use
+# YAML keys instead of the regular INI format, replace any hyphens/dashes with
 # underscores in those keys, and set boolean values as explicit strings (wrapped
 # in quotes, e.g. "true").
 
@@ -45,3 +45,20 @@ local_ssh_keyfile: "/local/path/to/private/ssh/key"
 # Host IP of the Phantom proxy on your own home network. If not using, leave
 # blank/default
 phantom_proxy_host_ip: "192.168.0.0"
+
+
+#####################
+# SERVER.PROPERTIES #
+#####################
+server_name: Dedicated server
+level_name: Bedrock level
+gamemode: survival
+difficulty: easy
+max_players: 10
+online_mode: "true"
+server_port: 19132
+server_portv6: 19133
+view_distance: 32
+tick_distance: 4
+player_idle_timeout: 30
+max_threads: 8
