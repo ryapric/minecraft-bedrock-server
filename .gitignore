@@ -12,7 +12,7 @@ cloudformation/*.yaml
 # Sensitive Ansible stuff
 ansible/hosts
 ansible/ansible.cfg
-ansible/phantom.yaml
+ansible/phantom-proxy.yaml
 
 # Bedrock server files you might not want to push
 ansible/bedrock-server/server.properties
