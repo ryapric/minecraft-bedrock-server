@@ -1,0 +1,22 @@
+# NOTE: this is assumed to be running on a Raspberry Pi, so change accordingly
+# if you're doing something different
+- hosts: phantom_proxy
+  become: yes
+  tasks:
+
+    - name: Copy up .service file
+      copy:
+        src: "./phantom-proxy/phantom-proxy.service"
+        dest: "/etc/systemd/system/phantom-proxy.service"
+
+    - name: Download Phantom
+      get_url:
+        url: https://github.com/jhead/phantom/releases/download/v0.3.1/phantom-linux-arm7
+        dest: /root/phantom
+        mode: '0755'
+
+    - name: Start Phantom proxy service, and enable at boot
+      systemd:
+        name: phantom-proxy
+        state: started
+        enabled: yes
