@@ -101,6 +101,21 @@ Resources:
       {%- endfor %}
 
 
+  ###########
+  # Logging #
+  ###########
+  LogGroup:
+    Type: AWS::Logs::LogGroup
+    Properties: 
+      LogGroupName: "/aws/ec2/minecraft-bedrock-server"
+      RetentionInDays: 7
+  LogStream:
+    Type: AWS::Logs::LogStream
+    Properties:
+      LogGroupName: !Ref LogGroup
+      LogStreamName: "bedrock-server"
+
+
   ################################
   # EC2 instance and IAM Profile #
   ################################
@@ -129,6 +144,7 @@ Resources:
                   - "s3:List*"
                   - "s3:GetObject"
                   - "s3:PutObject"
+                  - "logs:*"
                   - "sts:*"
                   - "ec2messages:GetMessages"
                 Resource: "*"
