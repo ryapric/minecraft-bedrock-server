@@ -39,6 +39,12 @@
           - docker-compose
         state: latest
 
+    - name: Add ubuntu user to docker group, for interactive convenience
+      user:
+        name: ubuntu
+        groups: docker
+        append: yes
+
     - name: Copy up Docker files
       copy:
         src: "{{ item.src }}"
