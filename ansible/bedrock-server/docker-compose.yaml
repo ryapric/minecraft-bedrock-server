@@ -1,4 +1,4 @@
-version: "3"
+version: "2"
 
 services:
   bedrock_server:
@@ -6,6 +6,7 @@ services:
     build:
       dockerfile: ./Dockerfile
       context: .
+    image: bedrock-server:latest
     tty: true
     ports:
       - "19132:19132/udp"

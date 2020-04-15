@@ -62,7 +62,10 @@
       command: bash /root/restore-from-s3.sh
 
     - name: Deploy Minecraft Bedrock server
-      command: docker-compose -f /root/docker-compose.yaml up -d --build
+      docker_compose:
+        project_src: /root
+        build: yes
+        recreate: always
 
     - name: Set up backup cron job on host
       cron:
