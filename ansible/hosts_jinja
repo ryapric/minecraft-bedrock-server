@@ -1,6 +1,6 @@
 # IP of your Bedrock server host
-[minecraft_bedrock_server]
-{{ config.minecraft_bedrock_server_ip }} ansible_ssh_private_key_file={{ config.local_aws_keyfile }}
+[bedrock_server]
+{{ config.bedrock_server_ip }} ansible_ssh_private_key_file={{ config.local_aws_keyfile }}
 
 
 # In case you're setting up at home with the Phantom proxy for playing on PS4

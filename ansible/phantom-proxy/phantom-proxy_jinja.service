@@ -2,7 +2,7 @@
 Description=Phantom proxy server for Minecraft on console
 
 [Service]
-ExecStart=/root/phantom -server {{ config.minecraft_bedrock_server_ip }}:19132
+ExecStart=/root/phantom -server {{ config.bedrock_server_ip }}:19132
 Restart=always
 RestartSec=5s
 

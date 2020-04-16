@@ -9,7 +9,9 @@
 # underscores in those keys, and set boolean values as explicit strings (wrapped
 # in quotes, e.g. "true").
 
-minecraft_bedrock_server_ip: "1.1.1.1"
+# Main Bedrock server configs
+bedrock_server_ip: "1.1.1.1"
+bedrock_server_version: "1.14.60.5"
 
 # Needed to whitelist SSH access to the server host
 my_ip: "2.2.2.2"

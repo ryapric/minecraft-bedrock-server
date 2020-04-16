@@ -7,7 +7,7 @@ services:
       dockerfile: ./Dockerfile
       context: .
       args:
-        - bedrock_version={{ config.minecraft_bedrock_server_version }}
+        - bedrock_version={{ config.bedrock_server_version }}
     image: bedrock-server:latest
     tty: true
     ports:

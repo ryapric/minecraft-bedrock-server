@@ -1,4 +1,4 @@
-- hosts: minecraft_bedrock_server
+- hosts: bedrock_server
   become: yes
   tasks:
 
