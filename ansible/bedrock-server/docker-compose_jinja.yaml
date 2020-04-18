@@ -9,6 +9,7 @@ services:
       args:
         - bedrock_version={{ config.bedrock_server_version }}
     image: bedrock-server:latest
+    stdin_open: true
     tty: true
     ports:
       - "19132:19132/udp"
