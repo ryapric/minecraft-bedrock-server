@@ -1,4 +1,4 @@
-FROM debian:buster
+FROM debian:buster-slim
 
 # The bedrock_server executable needs this set
 ENV LD_LIBRARY_PATH=.
@@ -10,9 +10,7 @@ RUN apt-get update && apt-get install -y \
       less \
       nano \
       curl \
-      zip \
-      unzip \
-      awscli
+      unzip
 
 WORKDIR /root
 
