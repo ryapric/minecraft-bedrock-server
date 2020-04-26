@@ -53,10 +53,10 @@ cfn-delete: render-all
 # Ansible #
 ###########
 ansible-configure-bedrock-server: render-all
-	@cd ansible && ansible-playbook bedrock-server.yaml
+	@cd ansible && ansible-playbook ./bedrock-server/bedrock-server.yaml
 
 ansible-configure-phantom-proxy: render-all
-	@cd ansible && ansible-playbook phantom-proxy.yaml
+	@cd ansible && ansible-playbook ./phantom-proxy/phantom-proxy.yaml
 
 get-backup-file: render-all
-	@cd ansible && ansible-playbook get-backup-file.yaml
+	@cd ansible && ansible-playbook ./bedrock-server/get-backup-file.yaml
