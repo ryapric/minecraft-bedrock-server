@@ -20,7 +20,6 @@ ansible/phantom-proxy/phantom-proxy.service
 bedrock-server/server.properties
 bedrock-server/permissions.json
 bedrock-server/whitelist.json
-bedrock-server/docker-compose.yaml
 
 # Actual server backups, in case you pull them locally
 *.tar.gz
