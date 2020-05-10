@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 
-accountNumber=$(aws sts get-caller-identity --query Account --output text)
-bucket="minecraft-bedrock-server-${accountNumber}"
+source get-variables.sh
+
 bakfile="bedrock-server-backup.tar.gz"
 
 # Only backup to S3 if files were actually modified in the last 15 minutes. This

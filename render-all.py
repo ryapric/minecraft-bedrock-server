@@ -14,8 +14,16 @@ import yaml
 with open('./config.yaml') as f:
     config = yaml.safe_load(f.read())
 
+# Define any helper functions you might want to pass to templates to use
+def cat_file(filename):
+    with open(filename) as f:
+        x = f.read()
+    return x
+config['cat_file'] = cat_file
+
 # File to render is passed as arg 1 on CLI
 argfile = sys.argv[1]
+print(f'Rendering {argfile}')
 
 # Please stick to the format, folks, I'm only one guy over here
 if '_jinja' not in argfile:
@@ -33,7 +41,7 @@ header = """\
 
 """
 if '.json' not in argfile:
-    template = header + template 
+    template = header + template
 
 # Render Jinja template using global config dict
 jinja_template = Template(template)

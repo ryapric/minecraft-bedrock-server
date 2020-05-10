@@ -6,26 +6,30 @@ Mappings:
   RegionMap: 
     us-east-2:
       "HVM64": "ami-07c1207a9d40bc3bd"
-      "FreeTierInstance": "t2.micro"
+      "DoorknockerInstance": "t3a.nano"
+      "WorkerInstance": "c5.xlarge"
     ca-central-1:
       "HVM64": "ami-0edd51cc29813e254"
-      "FreeTierInstance": "t2.micro"
+      "DoorknockerInstance": "t3a.nano"
+      "WorkerInstance": "c5.xlarge"
     eu-north-1:
       "HVM64": "ami-050981837962d44ac"
-      "FreeTierInstance": "t3.micro"
+      "DoorknockerInstance": "t3a.nano"
+      "WorkerInstance": "c5.xlarge"
+
 
 Resources:
 
-  ###########################
-  # VPC component resources #
-  ###########################
+  #######
+  # VPC #
+  #######
   VPC:
     Type: "AWS::EC2::VPC"
     Properties:
       CidrBlock: "10.0.0.0/16"
       Tags:
         - Key:   "Name"
-          Value: "minecraft-bedrock-server-vpc"
+          Value: "bedrock-server-vpc"
   
   PublicSubnet:
     Type: AWS::EC2::Subnet
@@ -100,25 +104,21 @@ Resources:
           CidrIp: "{{ ip }}"
       {%- endfor %}
 
-
-  ###########
-  # Logging #
-  ###########
-  LogGroup:
-    Type: AWS::Logs::LogGroup
-    Properties: 
-      LogGroupName: "/aws/ec2/minecraft-bedrock-server"
-      RetentionInDays: 7
-  LogStream:
-    Type: AWS::Logs::LogStream
+  SecurityGroupEfs:
+    Type: AWS::EC2::SecurityGroup
     Properties:
-      LogGroupName: !Ref LogGroup
-      LogStreamName: "bedrock-server"
+      GroupDescription: "Enable NFS access via port 2049, from Bedrock SG"
+      VpcId: !Ref VPC
+      SecurityGroupIngress:
+        - IpProtocol: "tcp"
+          FromPort: "2049"
+          ToPort: "2049"
+          SourceSecurityGroupId: !Ref SecurityGroupMinecraftServer
 
 
-  ################################
-  # EC2 instance and IAM Profile #
-  ################################
+  #######
+  # IAM #
+  #######
   BedrockRole:
     Type: "AWS::IAM::Role"
     Properties:
@@ -147,6 +147,7 @@ Resources:
                   - "logs:*"
                   - "sts:*"
                   - "ec2messages:GetMessages"
+                  - "efs:*"
                 Resource: "*"
   
   BedrockInstanceProfile:
@@ -156,20 +157,96 @@ Resources:
       Roles:
         - !Ref BedrockRole
 
-  BedrockServer:
+
+  ###########
+  # Logging #
+  ###########
+  LogGroup:
+    Type: AWS::Logs::LogGroup
+    Properties: 
+      LogGroupName: "/aws/ec2/bedrock-server"
+      RetentionInDays: 7
+  LogStreamSmall:
+    Type: AWS::Logs::LogStream
+    Properties:
+      LogGroupName: !Ref LogGroup
+      LogStreamName: "bedrock-server-small"
+  LogStreamLarge:
+    Type: AWS::Logs::LogStream
+    Properties:
+      LogGroupName: !Ref LogGroup
+      LogStreamName: "bedrock-server-large"
+
+
+  #######
+  # EFS #
+  #######
+  EfsFileSystem:
+    Type: AWS::EFS::FileSystem
+    Properties:
+      FileSystemTags:
+        - Key: "Name"
+          Value: "bedrock-server-efs"
+  EfsMountTarget:
+    Type: AWS::EFS::MountTarget
+    Properties:
+      FileSystemId: !Ref EfsFileSystem
+      SubnetId: !Ref PublicSubnet
+      SecurityGroups:
+        - !Ref SecurityGroupMinecraftServer
+
+
+  #################
+  # EC2 instances #
+  #################
+  BedrockServerDoorknocker:
     Type: "AWS::EC2::Instance"
     Properties: 
       ImageId: !FindInMap [RegionMap, !Ref "AWS::Region", HVM64]
-      InstanceType: !FindInMap [RegionMap, !Ref "AWS::Region", FreeTierInstance]
+      InstanceType: !FindInMap [RegionMap, !Ref "AWS::Region", DoorknockerInstance]
       IamInstanceProfile: !Ref BedrockInstanceProfile
       KeyName: {{ config.ec2_keypair_name }}
       SecurityGroupIds:
         - !Ref SecurityGroupSSH
         - !Ref SecurityGroupMinecraftServer
       SubnetId: !Ref PublicSubnet
+      UserData: !Base64 |
+        {{ config['cat_file']('bedrock-server/scripts/user-data.sh') | indent(8) }}
       Tags:
         - Key:   "Name"
-          Value: "minecraft-bedrock-server"
+          Value: "bedrock-server-doorknocker"
+
+  BedrockServerWorker:
+    Type: "AWS::EC2::Instance"
+    Properties: 
+      ImageId: !FindInMap [RegionMap, !Ref "AWS::Region", HVM64]
+      InstanceType: !FindInMap [RegionMap, !Ref "AWS::Region", WorkerInstance]
+      IamInstanceProfile: !Ref BedrockInstanceProfile
+      KeyName: {{ config.ec2_keypair_name }}
+      SecurityGroupIds:
+        - !Ref SecurityGroupSSH
+        - !Ref SecurityGroupMinecraftServer
+      SubnetId: !Ref PublicSubnet
+      UserData: !Base64 |
+        {{ config['cat_file']('bedrock-server/scripts/user-data.sh') | indent(8) }}
+      Tags:
+        - Key:   "Name"
+          Value: "bedrock-server-worker"
+
+
+  #######################
+  # EIP and Association #
+  #######################
+  Eip:
+    Type: AWS::EC2::EIP
+    Properties:
+      Domain: vpc
+  
+  EipAssociation:
+    Type: AWS::EC2::EIPAssociation
+    Properties:
+      AllocationId: !GetAtt Eip.AllocationId
+      InstanceId: !Ref BedrockServerWorker
 
 
 ###########
@@ -195,9 +272,19 @@ Outputs:
     Description: "SG ID allowing Minecraft server access to approved IPs"
     Value: !Ref SecurityGroupMinecraftServer
     Export:
-      Name: !Sub "SecurityGroupMinecraftServer"
-  BedrockServerIP:
-    Description: Public IP of Bedrock Server
-    Value: !GetAtt BedrockServer.PublicIp
+      Name: !Sub "${AWS::StackName}-SecurityGroupMinecraftServer"
+  SecurityGroupEfs:
+    Description: SG ID allowing EFS/NFS access to the Bedrock server
+    Value: !Ref SecurityGroupEfs
     Export:
-      Name: !Sub "${AWS::StackName}-BedrockServerIp"
+      Name: !Sub "${AWS::StackName}-SecurityGroupEfs"
+  # BedrockServerIP:
+  #   Description: Public IP of Bedrock Server
+  #   Value: !GetAtt BedrockServer.PublicIp
+  #   Export:
+  #     Name: !Sub "${AWS::StackName}-BedrockServerIp"
+  Eip:
+    Description: Elastic IP Address
+    Value: !Ref Eip
+    Export:
+      Name: !Sub "${AWS::StackName}-EipAddress"

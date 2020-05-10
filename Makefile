@@ -1,62 +1,52 @@
 SHELL := /usr/bin/env bash
 
 
+# accountNumber := $$(aws sts get-caller-identity --query Account --output text)
+# bucket := minecraft-bedrock-server-$(accountNumber)
+
+
+help:
+	@printf "See Makefile for available targets\n"
+
+check-variables:
+	@if [[ -z "$${stackname}" ]]; then \
+			printf "You must supply a 'stackname' environment variable. Aborting.\n" && exit 1; \
+	fi
+
 # This renders all Jinja templates in the repo with your secure, gitignored values
 render-all:
 	@printf "Rendering all Jinja templates...\n"
 	@find . -regex '.*_jinja.*' -print0 | xargs -0 -I{} python3 render-all.py {}
 
+# Send repo source to S3 to pull into EC2 userdata
+# Make's shell interpretation makes variables kind of funky to work with here
+push-source: render-all
+	@source bedrock-server/scripts/get-variables.sh; \
+	srcdir=`basename "$${PWD}"`; \
+	cd .. \
+	&& tar -czf $${srcdir}_source.tar.gz $${srcdir} \
+	&& aws s3 cp $${srcdir}_source.tar.gz s3://$${bucket}/source.tar.gz
+
 
 ##################
 # CloudFormation #
 ##################
+cfn-deploy: check-variables push-source
+	aws cloudformation deploy \
+		--stack-name bedrockServer-$(stackname) \
+		--template-file cloudformation/$(stackname).yaml \
+		--tags 'Owner=ryapric@gmail.com' \
+		--capabilities CAPABILITY_IAM
 
-# This is identical for create- and update-stack, so stuff into a Make variable
-stackname := bedrockServer
-
-define cfn-create-update-args
---stack-name $(stackname) \
---template-body file://cloudformation/$(stackname).yaml \
---tags file://cloudformation/tags/tags.json \
---capabilities CAPABILITY_IAM
-endef
-
-# This one's gonna look a little gross, sorry
-get-bedrock-server-ip: render-all
-	@printf "Bedrock server IP: %s\n" \
-	 	$$(aws cloudformation describe-stacks --stack-name bedrockServer | jq -r '.Stacks[0].Outputs | map(select(.OutputKey == "BedrockServerIP")) | .[0].OutputValue')
-
-cfn-create: render-all
-	@printf "Trying to submit stack...\n"
-	@aws cloudformation create-stack $(cfn-create-update-args)
-	@printf "Stack submitted. Waiting for create completion...\n"
-	@aws cloudformation wait stack-create-complete --stack-name $(stackname) || make -s cfn-delete stackname=$(stackname)
-	@printf "Done.\n"
-	@make -s get-bedrock-server-ip
-
-cfn-update: render-all
-	@printf "Trying to submit stack...\n"
-	@aws cloudformation update-stack $(cfn-create-update-args)
-	@printf "Stack submitted. Waiting for update completion...\n"
-	@aws cloudformation wait stack-update-complete --stack-name $(stackname)
-	@printf "Done.\n"
-	@make -s get-bedrock-server-ip
-
-cfn-delete: render-all
-	@aws cloudformation delete-stack --stack-name $(stackname)
+cfn-delete: check-variables
+	@aws cloudformation delete-stack --stack-name bedrockServer-$(stackname)
 	@printf "Stack delete request sent. Waiting for delete completion...\n"
-	@aws cloudformation wait stack-delete-complete --stack-name $(stackname)
+	@aws cloudformation wait stack-delete-complete --stack-name bedrockServer-$(stackname)
 	@printf "Done.\n"
 
 
 ###########
 # Ansible #
 ###########
-ansible-configure-bedrock-server: render-all
-	@cd ansible && ansible-playbook ./bedrock-server/bedrock-server.yaml
-
 ansible-configure-phantom-proxy: render-all
 	@cd ansible && ansible-playbook ./phantom-proxy/phantom-proxy.yaml
-
-get-backup-file: render-all
-	@cd ansible && ansible-playbook ./bedrock-server/get-backup-file.yaml

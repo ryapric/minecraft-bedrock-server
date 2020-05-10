@@ -17,10 +17,10 @@ ansible/ansible.cfg
 ansible/phantom-proxy/phantom-proxy.service
 
 # Bedrock server files you might not want to push
-ansible/bedrock-server/server.properties
-ansible/bedrock-server/permissions.json
-ansible/bedrock-server/whitelist.json
-ansible/bedrock-server/docker-compose.yaml
+bedrock-server/server.properties
+bedrock-server/permissions.json
+bedrock-server/whitelist.json
+bedrock-server/docker-compose.yaml
 
 # Actual server backups, in case you pull them locally
 *.tar.gz
