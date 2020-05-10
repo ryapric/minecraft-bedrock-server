@@ -1,74 +1,24 @@
-- hosts: bedrock_server
-  become: yes
-  tasks:
+version: "2"
 
-    - name: Install core system tools
-      apt:
-        update_cache: yes
-        name:
-          - apt-transport-https
-          - ca-certificates
-          - curl
-          - software-properties-common
-          - python3
-          - python3-pip
-          - python3-setuptools
-          - python3-venv
-          - nmap
-          - tar
-          - zip
-          - unzip
-          - awscli
-        state: latest
-
-    - name: Add Docker GPG apt Key
-      apt_key:
-        url: https://download.docker.com/linux/ubuntu/gpg
-        state: present
-
-    - name: Add Docker Repository
-      apt_repository:
-        repo: deb https://download.docker.com/linux/ubuntu bionic stable
-        state: present
-
-    - name: Install Docker
-      apt:
-        update_cache: yes
-        name:
-          - docker-ce
-          - docker-compose
-        state: latest
-
-    - name: Add ubuntu user to docker group, for interactive convenience
-      user:
-        name: ubuntu
-        groups: docker
-        append: yes
-
-    - name: Copy up Docker files
-      copy:
-        src: "{{ item.src }}"
-        dest: "{{ item.dest }}"
-      with_items:
-        - {src: './Dockerfile', dest: '/root/Dockerfile'}
-        - {src: './docker-compose.yaml', dest: '/root/docker-compose.yaml'}
-        - {src: './server.properties', dest: '/root/server.properties'}
-        - {src: './permissions.json', dest: '/root/permissions.json'}
-        - {src: './whitelist.json', dest: '/root/whitelist.json'}
-        - {src: './backup-to-s3.sh', dest: '/root/backup-to-s3.sh'}
-        - {src: './restore-from-s3.sh', dest: '/root/restore-from-s3.sh'}
-
-    - name: Check if backup data exists, and use it if so
-      command: bash /root/restore-from-s3.sh
-
-    - name: Deploy Minecraft Bedrock server
-      docker_compose:
-        project_src: /root
-        build: yes
-        recreate: always
-
-    - name: Set up backup cron job on host
-      cron:
-        name: "Backup Minecraft Bedrock server data"
-        minute: "*/15"
-        job: "bash /root/backup-to-s3.sh"
+services:
+  bedrock_server:
+    container_name: "bedrock_server"
+    build:
+      dockerfile: ./Dockerfile
+      context: .
+      args:
+        - bedrock_version={{ config.bedrock_server_version }}
+    image: bedrock-server:latest
+    stdin_open: true
+    tty: true
+    ports:
+      - "19132:19132/udp"
+      - "19133:19133/udp"
+    restart: always
+    logging:
+      driver: awslogs
+      options:
+        awslogs-region: eu-north-1
+        awslogs-group: /aws/ec2/minecraft-bedrock-server
+        awslogs-stream: bedrock-server
+        awslogs-create-group: "false" # CloudFormation handles this
