@@ -1,0 +1,7 @@
+FROM nginx:alpine
+
+COPY ../nginx-udp.conf .
+
+RUN cat nginx-udp.conf >> /etc/nginx/nginx.conf
+
+EXPOSE 19132/udp 19133/udp

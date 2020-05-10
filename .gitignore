@@ -25,5 +25,8 @@ bedrock-server/docker-compose.yaml
 # Actual server backups, in case you pull them locally
 *.tar.gz
 
+# Other misc.
+.vscode
+
 # Don't ignore any '_jinja' files. Make sure this stays at the end of the file!
 !*_jinja*

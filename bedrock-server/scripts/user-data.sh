@@ -74,9 +74,9 @@ deploy-bedrock-server() {
   instance_id=$(curl -s http://169.254.169.254/latest/meta-data/instance-id)
   nametag=$(aws ec2 describe-tags --filters "Name=resource-id,Values=${instance_id}" | jq -r '.Tags[] | select(.Key=="Name") | .Value')
   if [[ "${nametag}" == "bedrock-server-doorknocker" ]]; then
-    compose_file=$(find . -name "*doorknocker.yaml")
+    compose_file=$(find . -name "*doorknocker-compose.yaml")
   elif [[ "${nametag}" == "bedrock-server-worker" ]]; then
-    compose_file=$(find . -name "*bedrock-server.yaml")
+    compose_file=$(find . -name "*bedrock-server-compose.yaml")
   else
     printf "ERROR -- Couldn't determine which docker-compose file to use based on Instance tag! \n" 2>&1
   fi
@@ -98,7 +98,7 @@ main() {
   mount-efs
 
   download-source
-  # deploy-bedrock-server
+  deploy-bedrock-server
 }
 
 main

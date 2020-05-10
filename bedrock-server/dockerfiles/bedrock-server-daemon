@@ -1,0 +1,11 @@
+FROM python:3.7-slim-buster
+
+WORKDIR /root
+
+COPY ../scripts/daemon.py .
+
+RUN pip3 install \
+      boto3 \
+      docker
+
+CMD ["python3", "daemon.py"]
