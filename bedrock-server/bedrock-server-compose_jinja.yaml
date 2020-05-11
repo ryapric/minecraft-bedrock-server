@@ -2,9 +2,9 @@ version: "2"
 
 services:
   bedrock_server:
-    container_name: "bedrock_server"
+    container_name: bedrock_server
     build:
-      dockerfile: ./Dockerfile
+      dockerfile: ./bedrock-server/dockerfiles/bedrock-server
       context: .
       args:
         - bedrock_version={{ config.bedrock_server_version }}
@@ -15,10 +15,12 @@ services:
       - "19132:19132/udp"
       - "19133:19133/udp"
     restart: always
+    volumes:
+      - /mnt/efs:/mnt/efs
     logging:
       driver: awslogs
       options:
-        awslogs-region: eu-north-1
+        awslogs-region: us-east-2
         awslogs-group: /aws/ec2/minecraft-bedrock-server
         awslogs-stream: bedrock-server
         awslogs-create-group: "false" # CloudFormation handles this

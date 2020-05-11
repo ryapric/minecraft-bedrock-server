@@ -1,24 +1,44 @@
 version: "2"
 
 services:
-  bedrock_server:
-    container_name: "bedrock_server"
+
+  doorknocker:
+    container_name: doorknocker
     build:
-      dockerfile: ./Dockerfile
+      dockerfile: ./bedrock-server/dockerfiles/doorknocker
       context: .
-      args:
-        - bedrock_version={{ config.bedrock_server_version }}
-    image: bedrock-server:latest
+    image: doorknocker:latest
     stdin_open: true
     tty: true
     ports:
       - "19132:19132/udp"
       - "19133:19133/udp"
     restart: always
+    volumes:
+      - /mnt/efs:/mnt/efs
     logging:
       driver: awslogs
       options:
-        awslogs-region: eu-north-1
+        awslogs-region: us-east-2
         awslogs-group: /aws/ec2/minecraft-bedrock-server
-        awslogs-stream: bedrock-server
+        awslogs-stream: doorknocker-nginx
+        awslogs-create-group: "false" # CloudFormation handles this
+
+  daemon:
+    container_name: daemon
+    build:
+      dockerfile: ./bedrock-server/dockerfiles/daemon
+      context: .
+    image: daemon:latest
+    stdin_open: true
+    tty: true
+    restart: always
+    volumes:
+      - /mnt/efs:/mnt/efs
+    logging:
+      driver: awslogs
+      options:
+        awslogs-region: us-east-2
+        awslogs-group: /aws/ec2/minecraft-bedrock-server
+        awslogs-stream: doorknocker-daemon
         awslogs-create-group: "false" # CloudFormation handles this

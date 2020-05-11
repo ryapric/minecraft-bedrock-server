@@ -1,11 +1,11 @@
-FROM python:3.7-slim-buster
+FROM python:3.7-alpine
+
+ENV AWS_DEFAULT_REGION=us-east-2
 
 WORKDIR /root
 
-COPY ../scripts/daemon.py .
+COPY bedrock-server/scripts scripts
 
-RUN pip3 install \
-      boto3 \
-      docker
+RUN pip3 install boto3
 
-CMD ["python3", "daemon.py"]
+CMD while true; do python3 scripts/daemon_main.py; sleep 5; done
